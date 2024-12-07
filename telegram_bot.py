@@ -16,41 +16,50 @@ medications = {
     "First Aid and Wound Care": ["Hydrogen Peroxide", "Antiseptic Solution (Chlorhexidine)"]
 }
 
+# Emergency contacts
+emergency_contacts = {
+    "Campus Doctor": "+996 708 136 013",
+    "Ambulance": "103*",
+    "Azat Baike": "+996 772 178 743"
+
+}
+
 # /start command
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    bot.send_message(message.chat.id, f'Hello, {message.from_user.first_name}!')
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn_medications = types.KeyboardButton("💊 Medications")
+    btn_emergency = types.KeyboardButton("🚨 Emergency Contacts")
+    markup.add(btn_medications, btn_emergency)
+    bot.send_message(message.chat.id, f'Hello, {message.from_user.first_name}! How can I assist you today?', reply_markup=markup)
 
-# /help command
-@bot.message_handler(commands=['help'])
-def send_help(message):
-    bot.send_message(message.chat.id, 'Use this bot to get information about medications. Start by choosing a category.')
-
-# Show categories
-@bot.message_handler(content_types=["text"])
+# Handle "Medications" option
+@bot.message_handler(func=lambda message: message.text == "💊 Medications")
 def show_categories(message):
-    markup = types.InlineKeyboardMarkup(row_width=2)  # Set row width to 2 buttons per row
+    markup = types.InlineKeyboardMarkup(row_width=2)
     categories = list(medications.keys())
 
-    for category in categories[:8]:  # Show the first 8 categories
-        callback_data = category.replace(" ", "_").lower()  # Shorten callback data
+    for category in categories:
+        callback_data = category.replace(" ", "_").lower()
         markup.add(types.InlineKeyboardButton(category, callback_data=f"category_{callback_data}"))
-
-    # Add navigation if needed
-    if len(categories) > 8:
-        markup.add(types.InlineKeyboardButton("Next", callback_data="next_1"))
 
     bot.reply_to(message, "Select a medication category:", reply_markup=markup)
 
-# Handle callback queries
+# Handle "Emergency Contacts" option
+@bot.message_handler(func=lambda message: message.text == "🚨 Emergency Contacts")
+def show_emergency_contacts(message):
+    response = "📞 *Emergency Contacts*\n"
+    for name, contact in emergency_contacts.items():
+        response += f"🔹 *{name}*: {contact}\n"
+    bot.send_message(message.chat.id, response, parse_mode="Markdown")
+
+# Callback query handler
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback(call):
-    print(f"Callback received: {call.data}")  # Debugging
-
     if call.data.startswith("category_"):
-        category_key = call.data.split("_", 1)[1].replace("_", " ").title()  # Extract the category name
+        category_key = call.data.split("_", 1)[1].replace("_", " ").title()
         meds = medications.get(category_key, [])
-        markup = types.InlineKeyboardMarkup(row_width=1)  # One button per row
+        markup = types.InlineKeyboardMarkup(row_width=1)
 
         for med in meds:
             callback_data = med.replace(" ", "_").lower()
@@ -84,24 +93,6 @@ def handle_callback(call):
         response = details.get(med_name, "No information available for this medication.")
         bot.send_message(call.message.chat.id, response)
 
-    elif call.data.startswith("next_") or call.data.startswith("prev_"):
-        page = int(call.data.split("_")[1])
-        categories = list(medications.keys())
-        start = page * 8
-        end = start + 8
-        markup = types.InlineKeyboardMarkup(row_width=2)
-
-        for category in categories[start:end]:  # Show categories for this page
-            callback_data = category.replace(" ", "_").lower()
-            markup.add(types.InlineKeyboardButton(category, callback_data=f"category_{callback_data}"))
-
-        # Add navigation buttons
-        if start > 0:
-            markup.add(types.InlineKeyboardButton("Previous", callback_data=f"prev_{page - 1}"))
-        if end < len(categories):
-            markup.add(types.InlineKeyboardButton("Next", callback_data=f"next_{page + 1}"))
-
-        bot.edit_message_text("Select a medication category:", chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=markup)
-
 # Start the bot
 bot.polling(none_stop=True)
+
