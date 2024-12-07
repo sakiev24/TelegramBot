@@ -1,7 +1,7 @@
 import telebot
 from telebot import types
 
-bot = telebot.TeleBot('8069347907:AAFi_TMVNLp0H1YbO1u0-pIvCxiLTd0Cm2w')  
+bot = telebot.TeleBot('8069347907:AAFi_TMVNLp0H1YbO1u0-pIvCxiLTd0Cm2w')
 
 # Medication categories
 medications = {
@@ -21,8 +21,15 @@ emergency_contacts = {
     "Campus Doctor": "+996 708 136 013",
     "Ambulance": "103*",
     "Azat Baike": "+996 772 178 743"
-
 }
+
+# Function to escape special Markdown characters
+def escape_markdown(text):
+    """Escape special characters for Markdown."""
+    special_characters = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
+    for char in special_characters:
+        text = text.replace(char, f"\\{char}")
+    return text
 
 # /start command
 @bot.message_handler(commands=['start'])
@@ -31,7 +38,11 @@ def send_welcome(message):
     btn_medications = types.KeyboardButton("💊 Medications")
     btn_emergency = types.KeyboardButton("🚨 Emergency Contacts")
     markup.add(btn_medications, btn_emergency)
-    bot.send_message(message.chat.id, f'Hello, {message.from_user.first_name}! How can I assist you today?', reply_markup=markup)
+    bot.send_message(
+        message.chat.id,
+        f'Hello, {message.from_user.first_name}! How can I assist you today?',
+        reply_markup=markup
+    )
 
 # Handle "Medications" option
 @bot.message_handler(func=lambda message: message.text == "💊 Medications")
@@ -46,12 +57,17 @@ def show_categories(message):
     bot.reply_to(message, "Select a medication category:", reply_markup=markup)
 
 # Handle "Emergency Contacts" option
-@bot.message_handler(func=lambda message: message.text == "🚨 Emergency Contacts")
+@bot.message_handler(func=lambda message: message.text.strip() == "🚨 Emergency Contacts")
 def show_emergency_contacts(message):
     response = "📞 *Emergency Contacts*\n"
     for name, contact in emergency_contacts.items():
-        response += f"🔹 *{name}*: {contact}\n"
-    bot.send_message(message.chat.id, response, parse_mode="Markdown")
+        safe_contact = escape_markdown(contact)  # Escape special characters
+        response += f"🔹 *{name}*: {safe_contact}\n"
+
+    try:
+        bot.send_message(message.chat.id, response, parse_mode="Markdown")
+    except Exception as e:
+        print(f"Error sending message: {e}")
 
 # Callback query handler
 @bot.callback_query_handler(func=lambda call: True)
@@ -65,7 +81,12 @@ def handle_callback(call):
             callback_data = med.replace(" ", "_").lower()
             markup.add(types.InlineKeyboardButton(med, callback_data=f"med_{callback_data}"))
 
-        bot.edit_message_text(f"Medications in {category_key}:", chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=markup)
+        bot.edit_message_text(
+            f"Medications in {category_key}:",
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            reply_markup=markup
+        )
 
     elif call.data.startswith("med_"):
         med_name = call.data.split("_", 1)[1].replace("_", " ").title()
@@ -95,4 +116,3 @@ def handle_callback(call):
 
 # Start the bot
 bot.polling(none_stop=True)
-
