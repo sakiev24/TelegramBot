@@ -1,14 +1,7 @@
-import os
-from flask import Flask, request
 import telebot
 from telebot import types
 
-# Load the bot token from environment variables
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-bot = telebot.TeleBot(BOT_TOKEN)
-
-# Flask app setup
-app = Flask(__name__)
+bot = telebot.TeleBot('7724630580:AAEZZ9jOqzVCcvfRdflZa5h4iTx8KpvaEYs')
 
 # Medication categories
 medications = {
@@ -95,6 +88,7 @@ def handle_callback(call):
             reply_markup=markup
         )
 
+
     elif call.data.startswith("med_"):
         med_name = call.data.split("_", 1)[1].replace("_", " ").title()
         details = {
@@ -121,18 +115,5 @@ def handle_callback(call):
         response = details.get(med_name, "No information available for this medication.")
         bot.send_message(call.message.chat.id, response)
 
-# Webhook route
-@app.route(f"/{BOT_TOKEN}", methods=["POST"])
-def receive_update():
-    update = telebot.types.Update.de_json(request.stream.read().decode("utf-8"))
-    bot.process_new_updates([update])
-    return "OK", 200
-
-# Home route
-@app.route("/")
-def index():
-    return "Telegram Bot is running!", 200
-
-# Remove old webhook and set new one
-bot.remove_webhook()
-bot.set_webhook(url=f"https://<your-vercel-project>.vercel.app/{BOT_TOKEN}")
+# Start the bot
+bot.polling(none_stop=True)
