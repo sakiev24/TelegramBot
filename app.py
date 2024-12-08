@@ -1,7 +1,7 @@
 import telebot
 from telebot import types
 
-bot = telebot.TeleBot('7724630580:AAEZZ9jOqzVCcvfRdflZa5h4iTx8KpvaEYs')
+bot = telebot.TeleBot('7724630580:AAEZZ9jOqzVCcvfRdflZa5h4iTx8KpvaEYs') 
 
 # Medication categories
 medications = {
@@ -14,6 +14,29 @@ medications = {
     "Respiratory Medications": ["Salbutamol (Ventolin)"],
     "Cold & Flu": ["TylolHot"],
     "First Aid and Wound Care": ["Hydrogen Peroxide", "Antiseptic Solution (Chlorhexidine)"]
+}
+
+# Medication details
+details = {
+    "Paracetamol": "Paracetamol is used for pain relief and fever.",
+    "Ibuprofen": "Ibuprofen is used for pain, inflammation, and fever.",
+    "Noshpa": "Noshpa is used to relieve pain from muscle spasms.",
+    "Amoxicillin": "Amoxicillin is an antibiotic used for bacterial infections.",
+    "Citramon": "Citramon is used for pain, headache, and fever.",
+    "TylolHot": "TylolHot is used for cold and flu symptoms.",
+    "Aspirin": "Aspirin is for pain relief and as a blood thinner.",
+    "Ciprofloxacin": "For bacterial infections like urinary tract infections.",
+    "Metronidazole (Flagyl)": "For bacterial and parasitic infections.",
+    "Cetirizine": "For allergies and hay fever.",
+    "Loratadine": "For seasonal allergies.",
+    "Omeprazole": "For stomach ulcers and acid reflux.",
+    "Loperamide (Imodium)": "For diarrhea control.",
+    "Activated Charcoal": "For poisoning and indigestion.",
+    "Nitroglycerin": "For chest pain or angina.",
+    "Amlodipine": "For high blood pressure.",
+    "Salbutamol (Ventolin)": "For asthma attacks.",
+    "Hydrogen Peroxide": "For wound cleaning and disinfection.",
+    "Antiseptic Solution (Chlorhexidine)": "For cleaning wounds."
 }
 
 # Emergency contacts
@@ -88,31 +111,11 @@ def handle_callback(call):
             reply_markup=markup
         )
 
-
     elif call.data.startswith("med_"):
-        med_name = call.data.split("_", 1)[1].replace("_", " ").title()
-        details = {
-            "Paracetamol": "Paracetamol is used for pain relief and fever.",
-            "Ibuprofen": "Ibuprofen is used for pain, inflammation, and fever.",
-            "Noshpa": "Noshpa is used to relieve pain from muscle spasms.",
-            "Amoxicillin": "Amoxicillin is an antibiotic used for bacterial infections.",
-            "Citramon": "Citramon is used for pain, headache, and fever.",
-            "TylolHot": "TylolHot is used for cold and flu symptoms.",
-            "Aspirin": "Aspirin is for pain relief and as a blood thinner.",
-            "Ciprofloxacin": "For bacterial infections like urinary tract infections.",
-            "Metronidazole (Flagyl)": "For bacterial and parasitic infections.",
-            "Cetirizine": "For allergies and hay fever.",
-            "Loratadine": "For seasonal allergies.",
-            "Omeprazole": "For stomach ulcers and acid reflux.",
-            "Loperamide (Imodium)": "For diarrhea control.",
-            "Activated Charcoal": "For poisoning and indigestion.",
-            "Nitroglycerin": "For chest pain or angina.",
-            "Amlodipine": "For high blood pressure.",
-            "Salbutamol (Ventolin)": "For asthma attacks.",
-            "Hydrogen Peroxide": "For wound cleaning and disinfection.",
-            "Antiseptic Solution (Chlorhexidine)": "For cleaning wounds."
-        }
-        response = details.get(med_name, "No information available for this medication.")
+        med_name = call.data.split("_", 1)[1].replace("_", " ").capitalize()
+        # Fix the matching to handle casing or formatting issues
+        med_name_original = next((name for name in details.keys() if med_name.lower() == name.lower()), None)
+        response = details.get(med_name_original, "No information available for this medication.")
         bot.send_message(call.message.chat.id, response)
 
 # Start the bot
