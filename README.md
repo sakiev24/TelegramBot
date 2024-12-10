@@ -1,5 +1,5 @@
 # UCA Medication Availability Telegram Bot
-Here is the link to our [TelegramBot](https://t.me/MedicineUCA_Bot)
+Here is the link to our [TelegramBot](https://t.me/MedicinesUCA_Bot)
 ## Introduction
 The UCA Medication Availability Telegram Bot project was developed to address a critical need among students at the University of Central Asia (UCA). While the university has a well-stocked cabinet of medications managed by Kiyal Eje, students often lack timely information about the availability of specific medicines. This project leverages Python and the Telegram Bot API to create a simple, efficient solution that provides real-time information about the medications available on campus.
 
